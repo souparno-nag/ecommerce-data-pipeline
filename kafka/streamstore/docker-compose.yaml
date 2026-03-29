@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.7.8
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_KRAFT_MODE: 'true' # KRaft mode, no ZooKeeper
+      CLUSTER_ID: 'EUR824_d+wDJNkk2c34x-' # unique cluster ID, can be generated with `kafka-storage.sh random-uuid`
+      KAFKA_NODE_ID: 1 # unique broker ID, can be any positive integer
+      KAFKA_PROCESS_ROLES: broker,controller # this node is both a broker and a controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093 # controller quorum voters, format: <id>@<host>:<port>
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # no backup, one copy of metadata (default 3)
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093 # listeners for clients and controller communication
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092 # advertised listener for clients, use host.docker.internal if running on Windows/Mac
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER # specify which listener is for controller communication
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs # log directories for the broker
+    volumes:
+      - kafka_kraft:/var/lib/kafka/data # persist logs in a Docker volume
+
+volumes:
+  kafka_kraft:
