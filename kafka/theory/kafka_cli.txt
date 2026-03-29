@@ -1,0 +1,13 @@
+Commands
+
+1. List of all topics kafka is keeping track of
+docker exec -it kafka kafka-topics --list --bootstrap-server localhost:9092
+
+2. Metadata of particular topic
+docker exec -it kafka kafka-topics --bootstrap-server localhost:9092 --describe --topic orders
+
+3. All events within a topic
+docker exec -it kafka kafka-console-consumer --bootstrap-server localhost:9092 --topic orders --from-beginning
+
+Note:
+Documentation: https://docs.confluent.io/kafka/operations-tools/kafka-tools.html
