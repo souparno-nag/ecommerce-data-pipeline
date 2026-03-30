@@ -47,3 +47,11 @@ docker compose up -d
 3. Run consumer: `python consumer.py` (reads and prints orders).
 
 This shows Kafka decoupling services via events, with replayable, partitioned topics for scalability.
+
+## Real Time Weather Streaming Project using Kafka, Flint & PostgresDB (Kafka Project 2)
+
+### Steps
+
+1. Setup directory real-time-streaming
+2. Create 3 sub-directories: kafka-producer, postgres, flink-processor
+3. Form create_table.sql to define the table and create corresponding Dockerfile
