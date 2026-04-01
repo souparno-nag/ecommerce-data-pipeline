@@ -1,1 +1,5 @@
 confluent-kafka
+kafka-python
+schedule
+aiokafka
+faker
