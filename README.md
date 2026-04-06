@@ -50,8 +50,59 @@ This shows Kafka decoupling services via events, with replayable, partitioned to
 
 ## Real Time Weather Streaming Project using Kafka, Flint & PostgresDB (Kafka Project 2)
 
-### Steps
+### Project Overview
 
-1. Setup directory real-time-streaming
-2. Create 3 sub-directories: kafka-producer, postgres, flink-processor
-3. Form create_table.sql to define the table and create corresponding Dockerfile
+This project demonstrates the construction of a **real-time data streaming pipeline** from scratch. It integrates three powerful technologies:
+
+- **Apache Kafka** for efficient event ingestion and message brokering.
+- **Apache Flink** for real-time stream processing.
+- **PostgreSQL (Postgres)** as a data sink for storing processed results.
+
+The pipeline enables instant insights from streaming data, applicable to domains like finance, e-commerce, and IoT.
+
+### Architecture
+
+The pipeline follows a linear, decoupled architecture:
+
+1. **Data Source** → **Kafka Producer** (sends raw events to a Kafka topic)
+2. **Apache Kafka** (acts as the distributed event streaming platform)
+3. **Apache Flink Consumer** (consumes events from Kafka, processes them in real-time)
+4. **PostgreSQL Sink** (Flink writes the processed results to a Postgres table)
+5. **Data Storage & Query** (Postgres stores final insights for analysis or visualization)
+
+### Technologies Used
+
+| Technology | Role in Pipeline |
+| --- | --- |
+| **Apache Kafka** | Event ingestion, buffering, and decoupling producer from consumer. |
+| **Apache Flink** | Real-time stream processing (e.g., filtering, aggregation, transformation). |
+| **PostgreSQL** | Persistent storage for processed results, enabling querying and analysis. |
+| **Java** (implied) | Primary language for Kafka producer and Flink job implementation. |
+| **SQL** | Schema definition and data insertion in Postgres. |
+
+### Setup & Implementation Steps
+
+The video walks through four main phases:
+
+#### Phase 1: Environment Setup
+
+- **Folder structure** creation for the project.
+- **PostgreSQL setup**: Installing, creating a database, and designing a target table schema to receive processed data.
+
+#### Phase 2: Kafka Producer Implementation
+
+- Developing a producer application (likely in Java) to simulate or forward real-time events to a specified Kafka topic.
+- Configuration of Kafka broker address, topic name, serializers, and message sending logic.
+
+#### Phase 3: Flink Consumer & Processing Job
+
+- Building a Flink job that:
+
+- Consumes the data stream from the Kafka topic.
+- Performs real-time transformations (details depend on use case, e.g., windowed aggregations, filtering, enrichment).
+- Uses a **Flink PostgreSQL sink connector** to write output to the Postgres table.
+
+#### Phase 4: Integration & Testing
+
+- Connecting all components: Kafka → Flink → Postgres.
+- **End-to-end testing** to verify data flows correctly from producer to database.
