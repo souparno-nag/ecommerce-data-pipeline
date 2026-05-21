@@ -4,3 +4,5 @@ schedule
 aiokafka
 faker
 pydantic
+faust
+psycopg2

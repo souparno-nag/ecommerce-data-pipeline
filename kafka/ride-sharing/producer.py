@@ -31,6 +31,7 @@ class RideRequest(BaseModel):
 class DriverLocation(BaseModel):
     driver_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
+    zone_id: int = Field(..., ge=1, le=10)
     lat: float
     lon: float
     status: Literal["available", "busy"]
@@ -88,11 +89,12 @@ def produce_ride_request() -> RideRequest:
     return event
 
 
-def produce_driver_location() -> DriverLocation:
+def produce_driver_location(zone_id: int) -> DriverLocation:
     event = DriverLocation(
         lat=random.uniform(-90, 90),
         lon=random.uniform(-180, 180),
         status="available" if random.random() > 0.5 else "busy",
+        zone_id=zone_id
     )
     producer.produce(
         topic="driver_locations",
@@ -140,7 +142,7 @@ print("Producer started. Sending events every 2 seconds. Ctrl+C to stop.\n")
 try:
     while True:
         rr = produce_ride_request()
-        dl = produce_driver_location()
+        dl = produce_driver_location(zone_id=rr.zone_id)
         tc = produce_trip_completion(
             driver_id=dl.driver_id,
             zone_id=rr.zone_id,

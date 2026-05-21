@@ -39,5 +39,32 @@ services:
     environment:
       KAFKA_BROKERS: kafka:9092
 
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: ride
+      POSTGRES_PASSWORD: ride123
+      POSTGRES_DB: ridedb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+ 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+
 volumes:
   kafka_data:
+  postgres_data:
+  grafana_data:
