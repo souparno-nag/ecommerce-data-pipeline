@@ -6,3 +6,4 @@ faker
 pydantic
 faust
 psycopg2
+pyspark
