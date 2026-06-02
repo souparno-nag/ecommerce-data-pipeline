@@ -3,6 +3,9 @@ services:
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     networks:
       - hbase
+    ports:
+      - "9870:9870"
+      - "9000:9000"
     volumes:
       - namenode:/hadoop/dfs/name
       - ./NASA_access_log_Aug95:/tmp/NASA_access_log_Aug95
@@ -11,17 +14,6 @@ services:
       - CLUSTER_NAME=test
     env_file:
       - ./hadoop.env
-    deploy:
-      mode: replicated
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-      placement:
-        constraints:
-          - node.hostname == akswnc4.aksw.uni-leipzig.de
-      labels:
-        traefik.docker.network: hbase
-        traefik.port: 50070
 
   datanode:
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
@@ -33,71 +25,54 @@ services:
       - ./hadoop.env
     environment:
       SERVICE_PRECONDITION: "namenode:9870"
-    deploy:
-      mode: global
-      restart_policy:
-        condition: on-failure
-      labels:
-        traefik.docker.network: hbase
-        traefik.port: 50075
 
   resourcemanager:
     image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
     networks:
       - hbase
+    ports:
+      - "8088:8088"
     environment:
       SERVICE_PRECONDITION: "namenode:50070 datanode:50075"
     env_file:
       - ./hadoop.env
-    deploy:
-      mode: replicated
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-      placement:
-        constraints:
-          - node.hostname == akswnc4.aksw.uni-leipzig.de
-      labels:
-        traefik.docker.network: hbase
-        traefik.port: 8088
-    healthcheck:
-      disable: true
 
   nodemanager:
     image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
     networks:
       - hbase
+    ports:
+      - "8042:8042"
     environment:
       SERVICE_PRECONDITION: "namenode:50070 datanode:50075 resourcemanager:8088"
     env_file:
       - ./hadoop.env
-    deploy:
-      mode: global
-      restart_policy:
-        condition: on-failure
-      labels:
-        traefik.docker.network: hbase
-        traefik.port: 8042
 
   historyserver:
     image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
     networks:
       - hbase
+    ports:
+      - "8188:8188"
     volumes:
       - hadoop_historyserver:/hadoop/yarn/timeline
     environment:
       SERVICE_PRECONDITION: "namenode:50070 datanode:50075 resourcemanager:8088"
     env_file:
       - ./hadoop.env
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.hostname == akswnc4.aksw.uni-leipzig.de
-      labels:
-        traefik.docker.network: hbase
-        traefik.port: 8188
+
+  spark:
+    image: apache/spark:3.5.1
+    networks:
+      - hbase
+    ports:
+      - "4040:4040"
+    volumes:
+      - ./job.py:/app/job.py
+    environment:
+      - PYSPARK_PYTHON=python3
+    command: >
+      bash -c "sleep 30 && /opt/spark/bin/spark-submit --master local[*] /app/job.py"
 
 volumes:
   datanode:
