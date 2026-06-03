@@ -1,6 +1,7 @@
 services:
   namenode:
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode  
     networks:
       - hbase
     ports:
@@ -17,6 +18,7 @@ services:
 
   datanode:
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
     networks:
       - hbase
     volumes:
@@ -28,6 +30,7 @@ services:
 
   resourcemanager:
     image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    container_name: resourcemanager
     networks:
       - hbase
     ports:
@@ -39,6 +42,7 @@ services:
 
   nodemanager:
     image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    container_name: nodemanager
     networks:
       - hbase
     ports:
@@ -50,6 +54,7 @@ services:
 
   historyserver:
     image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
+    container_name: historyserver
     networks:
       - hbase
     ports:
@@ -63,6 +68,7 @@ services:
 
   spark:
     image: apache/spark:3.5.1
+    container_name: spark
     networks:
       - hbase
     ports:
@@ -74,10 +80,59 @@ services:
     command: >
       bash -c "sleep 30 && /opt/spark/bin/spark-submit --master local[*] /app/job.py"
 
+  hive-metastore:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-metastore
+    networks:
+      - hbase
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870 datanode:9864 hive-metastore-postgresql:5432"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore-postgresql:5432/metastore"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionDriverName: "org.postgresql.Driver"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionUserName: "hive"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionPassword: "hive"
+    ports:
+      - "9083:9083"
+    depends_on:
+      - hive-metastore-postgresql
+    command: >
+      - bash
+      - -c
+      - |
+        /opt/hive/bin/schematool -dbType postgres -initSchema
+        /opt/hive/bin/hive --service metastore
+
+  hive-server:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-server
+    networks:
+      - hbase
+    environment:
+      SERVICE_PRECONDITION: "hive-metastore:9083"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore-postgresql:5432/metastore"
+      HIVE_METASTORE_URI: "thrift://hive-metastore:9083"
+    ports:
+      - "10000:10000"
+    depends_on:
+      - hive-metastore
+
+  hive-metastore-postgresql:
+    image: bde2020/hive-metastore-postgresql:2.3.0
+    container_name: hive-metastore-postgresql
+    networks:
+      - hbase
+    environment:
+      POSTGRES_DB: metastore
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+    volumes:
+      - hive_metastore_postgresql:/var/lib/postgresql/data
+
 volumes:
   datanode:
   namenode:
   hadoop_historyserver:
+  hive_metastore_postgresql:
 
 networks:
   hbase:
